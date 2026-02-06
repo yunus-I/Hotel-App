@@ -65,5 +65,32 @@
 
     <!-- Load JavaScript -->
     <script src="js/app.js" type="module"></script>
+    <!-- Add before closing body tag -->
+<script>
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+    
+    // Check for new orders every 30 seconds
+    setInterval(async () => {
+        const { db } = await import('./js/firebase-config.js');
+        const lastCheck = localStorage.getItem('lastOrderCheck') || 0;
+        
+        const newOrders = await db.collection('hotels').doc(currentHotelId)
+            .collection('orders')
+            .where('createdAt', '>', new Date(lastCheck).toISOString())
+            .get();
+        
+        if (!newOrders.empty && Notification.permission === 'granted') {
+            new Notification('New Order!', {
+                body: 'You have a new room service order',
+                icon: '/icon.png'
+            });
+        }
+        
+        localStorage.setItem('lastOrderCheck', new Date().toISOString());
+    }, 30000);
+</script>
 </body>
 </html>

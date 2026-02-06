@@ -349,6 +349,32 @@ async function checkout() {
         }
     }
 }
+// Add after checkout() function
+async function trackOrder(orderId) {
+    const { db } = await import('./firebase-config.js');
+    
+    // Real-time order updates
+    db.collection('hotels').doc(currentHotelId)
+        .collection('orders').doc(orderId)
+        .onSnapshot((doc) => {
+            if (doc.exists) {
+                const order = doc.data();
+                showOrderStatus(order);
+            }
+        });
+}
+
+function showOrderStatus(order) {
+    const statusMessages = {
+        'pending': '👨‍🍳 Order received - Preparing',
+        'preparing': '👨‍🍳 Cooking your food',
+        'on_the_way': '🚶‍♂️ On the way to your room',
+        'delivered': '✅ Delivered to your room'
+    };
+    
+    const status = statusMessages[order.status] || 'Order received';
+    showToast(`Order status: ${status}`, 'info');
+}
 
 // Save order to Firebase
 async function saveOrderToFirebase(hotelId) {

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hotel Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+    <style>
+        .hotel-card { border-left: 4px solid #2481cc; }
+        .order-pending { border-left: 4px solid #f59e0b; }
+        .order-completed { border-left: 4px solid #10b981; }
+    </style>
+</head>
+<body class="bg-gray-50 p-6">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">🏨 Hotel Admin Dashboard</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Hotel Selector -->
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h2 class="text-xl font-bold mb-4">Select Hotel</h2>
+                <select id="hotel-select" class="w-full p-3 border rounded-lg mb-4">
+                    <option value="hotel_001">Grand Hotel</option>
+                    <option value="hotel_002">Add New Hotel...</option>
+                </select>
+                <button onclick="loadHotelData()" class="w-full bg-blue-600 text-white p-3 rounded-lg">
+                    Load Hotel Data
+                </button>
+            </div>
+            
+            <!-- Stats -->
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h2 class="text-xl font-bold mb-4">Today's Stats</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600" id="orders-today">0</div>
+                        <div class="text-sm text-gray-600">Orders</div>
+                    </div>
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600" id="revenue-today">$0</div>
+                        <div class="text-sm text-gray-600">Revenue</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h2 class="text-xl font-bold mb-4">Quick Actions</h2>
+                <div class="space-y-2">
+                    <button onclick="addMenuItem()" class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg">
+                        ➕ Add Menu Item
+                    </button>
+                    <button onclick="viewQR()" class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg">
+                        📱 Generate QR Code
+                    </button>
+                    <button onclick="viewOrders()" class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg">
+                        📊 View All Orders
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Menu Management -->
+        <div class="bg-white rounded-xl shadow mb-8">
+            <div class="p-6 border-b">
+                <h2 class="text-xl font-bold">Menu Management</h2>
+                <p class="text-gray-600">Manage your hotel's room service menu</p>
+            </div>
+            <div class="p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="menu-table">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="p-3 text-left">Item</th>
+                                <th class="p-3 text-left">Price</th>
+                                <th class="p-3 text-left">Category</th>
+                                <th class="p-3 text-left">Status</th>
+                                <th class="p-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="menu-items">
+                            <!-- Menu items will load here -->
+                        </tbody>
+                    </table>
+                </div>
+                <button onclick="addMenuItem()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">
+                    + Add New Item
+                </button>
+            </div>
+        </div>
+        
+        <!-- Recent Orders -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="p-6 border-b">
+                <h2 class="text-xl font-bold">Recent Orders</h2>
+                <p class="text-gray-600">Latest room service orders</p>
+            </div>
+            <div class="p-6" id="recent-orders">
+                <!-- Orders will load here -->
+                <p class="text-gray-500 italic">No orders yet</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- QR Code Modal -->
+    <div id="qr-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl max-w-md">
+            <h3 class="text-xl font-bold mb-4">Hotel QR Code</h3>
+            <div id="qrcode" class="mb-4"></div>
+            <p class="text-sm text-gray-600 mb-4">Scan this QR code with Telegram to open your hotel portal</p>
+            <button onclick="closeQR()" class="w-full p-3 bg-gray-100 rounded-lg">Close</button>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAtA5qHijKHAK8xKA4OxoQUIoTctFw5BsQ",
+            authDomain: "telegram-hotel-app.firebaseapp.com",
+            projectId: "telegram-hotel-app",
+            storageBucket: "telegram-hotel-app.firebasestorage.app",
+            messagingSenderId: "30546993827",
+            appId: "1:30546993827:web:14c5d829211af4085d5516"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let currentHotelId = 'hotel_001';
+        
+        // Load hotel data
+        async function loadHotelData() {
+            currentHotelId = document.getElementById('hotel-select').value;
+            
+            // Load menu items
+            const menuSnapshot = await db.collection('hotels').doc(currentHotelId)
+                .collection('menu_items').get();
+            
+            const menuItems = document.getElementById('menu-items');
+            menuItems.innerHTML = menuSnapshot.docs.map(doc => {
+                const item = doc.data();
+                return `
+                    <tr class="border-t">
+                        <td class="p-3">
+                            <div class="font-medium">${item.name}</div>
+                            <div class="text-sm text-gray-600">${item.description || ''}</div>
+                        </td>
+                        <td class="p-3">$${item.price}</td>
+                        <td class="p-3">${item.category || 'General'}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 rounded-full text-xs ${item.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${item.available ? 'Available' : 'Unavailable'}
+                            </span>
+                        </td>
+                        <td class="p-3">
+                            <button onclick="editItem('${doc.id}')" class="text-blue-600 mr-2">Edit</button>
+                            <button onclick="toggleItem('${doc.id}', ${!item.available})" class="text-gray-600">
+                                ${item.available ? 'Disable' : 'Enable'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Load recent orders
+            await loadRecentOrders();
+            await loadStats();
+        }
+        
+        async function loadRecentOrders() {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            const ordersSnapshot = await db.collection('hotels').doc(currentHotelId)
+                .collection('orders')
+                .where('createdAt', '>=', today.toISOString())
+                .orderBy('createdAt', 'desc')
+                .limit(5)
+                .get();
+            
+            const ordersContainer = document.getElementById('recent-orders');
+            
+            if (ordersSnapshot.empty) {
+                ordersContainer.innerHTML = '<p class="text-gray-500 italic">No orders today</p>';
+                return;
+            }
+            
+            ordersContainer.innerHTML = ordersSnapshot.docs.map(doc => {
+                const order = doc.data();
+                return `
+                    <div class="order-pending p-4 bg-gray-50 rounded-lg mb-3">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="font-bold">Order #${doc.id.substring(0, 8)}</div>
+                                <div class="text-sm text-gray-600">${new Date(order.createdAt).toLocaleTimeString()}</div>
+                            </div>
+                            <div class="font-bold text-lg">$${order.total.toFixed(2)}</div>
+                        </div>
+                        <div class="text-sm mb-2">
+                            ${order.items.map(item => `${item.quantity}x ${item.name}`).join(', ')}
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                                ${order.status || 'Pending'}
+                            </span>
+                            <button onclick="completeOrder('${doc.id}')" class="px-3 py-1 bg-green-600 text-white rounded text-sm">
+                                Mark Complete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        async function loadStats() {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            const ordersSnapshot = await db.collection('hotels').doc(currentHotelId)
+                .collection('orders')
+                .where('createdAt', '>=', today.toISOString())
+                .get();
+            
+            const totalOrders = ordersSnapshot.size;
+            const totalRevenue = ordersSnapshot.docs.reduce((sum, doc) => {
+                return sum + (doc.data().total || 0);
+            }, 0);
+            
+            document.getElementById('orders-today').textContent = totalOrders;
+            document.getElementById('revenue-today').textContent = `$${totalRevenue.toFixed(2)}`;
+        }
+        
+        function addMenuItem() {
+            const name = prompt('Item name:');
+            if (!name) return;
+            
+            const price = parseFloat(prompt('Price:'));
+            const category = prompt('Category (Sandwiches, Salads, Drinks, Desserts):') || 'General';
+            const description = prompt('Description (optional):');
+            
+            db.collection('hotels').doc(currentHotelId)
+                .collection('menu_items')
+                .add({
+                    name: name,
+                    price: price,
+                    category: category,
+                    description: description,
+                    available: true,
+                    createdAt: new Date().toISOString()
+                })
+                .then(() => {
+                    alert('Item added!');
+                    loadHotelData();
+                });
+        }
+        
+        function toggleItem(itemId, newStatus) {
+            db.collection('hotels').doc(currentHotelId)
+                .collection('menu_items')
+                .doc(itemId)
+                .update({ available: newStatus })
+                .then(() => {
+                    alert('Item updated!');
+                    loadHotelData();
+                });
+        }
+        
+        async function completeOrder(orderId) {
+            await db.collection('hotels').doc(currentHotelId)
+                .collection('orders')
+                .doc(orderId)
+                .update({ status: 'completed' });
+            
+            alert('Order marked as complete!');
+            loadHotelData();
+        }
+        
+        function viewQR() {
+            const qrUrl = `${window.location.origin}${window.location.pathname.replace('admin.html', '')}?hotel_id=${currentHotelId}`;
+            
+            // Load QR code library
+            if (!window.QRCode) {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+                script.onload = () => generateQRCode(qrUrl);
+                document.head.appendChild(script);
+            } else {
+                generateQRCode(qrUrl);
+            }
+        }
+        
+        function generateQRCode(url) {
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: url,
+                width: 200,
+                height: 200
+            });
+            document.getElementById('qr-modal').classList.remove('hidden');
+        }
+        
+        function closeQR() {
+            document.getElementById('qr-modal').classList.add('hidden');
+        }
+        
+        // Load data on page load
+        window.onload = loadHotelData;
+    </script>
+</body>
+</html>
