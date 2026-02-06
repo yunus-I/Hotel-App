@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setup Firebase - Hotel App</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+        .step { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        code { background: #333; color: white; padding: 10px; display: block; margin: 10px 0; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase Setup Guide</h1>
+    
+    <div class="step">
+        <h2>Step 1: Go to Firebase Console</h2>
+        <p>Visit: <a href="https://console.firebase.google.com/" target="_blank">https://console.firebase.google.com/</a></p>
+    </div>
+    
+    <div class="step">
+        <h2>Step 2: Create Project</h2>
+        <p>Click "Add project" → Name it "telegram-hotel-app" → Continue</p>
+    </div>
+    
+    <div class="step">
+        <h2>Step 3: Enable Firestore Database</h2>
+        <p>In left menu → Build → Firestore Database → Create database</p>
+        <p>Choose "Start in test mode" → Location: choose nearest</p>
+    </div>
+    
+    <div class="step">
+        <h2>Step 4: Create Collections</h2>
+        <p>Click "Start collection" → Collection ID: <strong>hotels</strong></p>
+        <p>Document ID: <strong>hotel_001</strong></p>
+        <p>Add these fields:</p>
+        <code>
+            name: "Grand Hotel"<br>
+            location: "New York, NY"<br>
+            phone: "+1-555-1234"<br>
+            status: "active"
+        </code>
+    </div>
+    
+    <div class="step">
+        <h2>Step 5: Add Menu Items</h2>
+        <p>In the <strong>hotel_001</strong> document, click "Start collection" → Name: <strong>menu_items</strong></p>
+        <p>Add first item (auto ID):</p>
+        <code>
+            name: "Club Sandwich"<br>
+            price: 12.99<br>
+            description: "Turkey, bacon, lettuce, tomato"<br>
+            available: true<br>
+            category: "Sandwiches"
+        </code>
+        <p>Add more items: Breakfast, Lunch, Dinner, Drinks</p>
+    </div>
+    
+    <div class="step">
+        <h2>Step 6: Test Your App</h2>
+        <p>Open: <a id="app-link" href="#">Your App Link</a></p>
+        <p id="test-result" class="success"></p>
+    </div>
+    
+    <script>
+        // Auto-generate app link
+        const baseUrl = window.location.origin.replace('setup-firebase', '');
+        document.getElementById('app-link').href = baseUrl + '?hotel_id=hotel_001';
+        document.getElementById('app-link').textContent = baseUrl + '?hotel_id=hotel_001';
+    </script>
+</body>
+</html>

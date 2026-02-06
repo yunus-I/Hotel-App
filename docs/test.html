@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Hotel App</title>
+    <style>
+        body { padding: 20px; font-family: Arial; }
+        .test { padding: 15px; margin: 10px; border-left: 4px solid; }
+        .pass { border-color: green; background: #e8f5e8; }
+        .fail { border-color: red; background: #ffebee; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Hotel App Test</h1>
+    
+    <div id="tests">
+        <div class="test" id="test1">
+            <h3>Test 1: Firebase Connection</h3>
+            <p id="result1">Running...</p>
+        </div>
+        
+        <div class="test" id="test2">
+            <h3>Test 2: Telegram Detection</h3>
+            <p id="result2">Running...</p>
+        </div>
+        
+        <div class="test" id="test3">
+            <h3>Test 3: Local Storage</h3>
+            <p id="result3">Running...</p>
+        </div>
+    </div>
+    
+    <button onclick="runTests()">Run Tests</button>
+    <button onclick="window.location.href='index.html?hotel_id=hotel_001'">Open App</button>
+    
+    <script>
+        async function runTests() {
+            // Test 1: Firebase
+            try {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAtA5qHijKHAK8xKA4OxoQUIoTctFw5BsQ",
+                    authDomain: "telegram-hotel-app.firebaseapp.com",
+                    projectId: "telegram-hotel-app"
+                };
+                
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                
+                document.getElementById('result1').innerHTML = '✅ Firebase connected!';
+                document.getElementById('test1').className = 'test pass';
+            } catch (e) {
+                document.getElementById('result1').innerHTML = '❌ Firebase error: ' + e.message;
+                document.getElementById('test1').className = 'test fail';
+            }
+            
+            // Test 2: Telegram
+            if (window.Telegram && Telegram.WebApp) {
+                document.getElementById('result2').innerHTML = '✅ Telegram Web App detected';
+                document.getElementById('test2').className = 'test pass';
+            } else {
+                document.getElementById('result2').innerHTML = '⚠️ Running in browser mode (OK for testing)';
+                document.getElementById('test2').className = 'test pass';
+            }
+            
+            // Test 3: Local Storage
+            try {
+                localStorage.setItem('test', 'pass');
+                const result = localStorage.getItem('test');
+                localStorage.removeItem('test');
+                
+                if (result === 'pass') {
+                    document.getElementById('result3').innerHTML = '✅ Local storage working';
+                    document.getElementById('test3').className = 'test pass';
+                } else {
+                    throw new Error('Storage failed');
+                }
+            } catch (e) {
+                document.getElementById('result3').innerHTML = '❌ Local storage error';
+                document.getElementById('test3').className = 'test fail';
+            }
+        }
+        
+        // Auto-run tests
+        setTimeout(runTests, 1000);
+    </script>
+    
+    <!-- Load Firebase for testing -->
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+</body>
+</html>

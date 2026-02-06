@@ -408,3 +408,97 @@ body {
         padding-bottom: 70px;
     }
 }
+/* Add to existing docs/css/main.css */
+
+.section-header {
+    margin-bottom: 24px;
+}
+
+.section-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.section-header p {
+    color: #666;
+    font-size: 14px;
+}
+
+.demo-note {
+    background: #ffeb3b;
+    color: #333;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 8px;
+    display: inline-block;
+}
+
+.menu-item {
+    position: relative;
+    padding-bottom: 60px; /* Space for button */
+}
+
+.add-btn {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    padding: 10px;
+    background: var(--tg-theme-button-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.add-btn:hover {
+    background: #1a73e8;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.service-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.service-card:active {
+    transform: scale(0.95);
+}
+
+.service-card i {
+    width: 40px;
+    height: 40px;
+    color: var(--tg-theme-button-color);
+    margin-bottom: 12px;
+}
+
+.service-card h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.service-card p {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Fix for icons not showing */
+[data-lucide] {
+    display: inline-block;
+    vertical-align: middle;
+}

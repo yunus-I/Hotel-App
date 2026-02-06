@@ -1,4 +1,4 @@
-// Firebase Configuration
+// Firebase Configuration - FIXED VERSION
 const firebaseConfig = {
     apiKey: "AIzaSyAtA5qHijKHAK8xKA4OxoQUIoTctFw5BsQ",
     authDomain: "telegram-hotel-app.firebaseapp.com",
@@ -13,8 +13,17 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
+// Get Firestore and Auth
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// Export for other modules
-export { db, auth, firebase };
+// Enable offline persistence (better UX)
+db.enablePersistence()
+    .catch((err) => {
+        console.warn("Offline persistence not supported:", err);
+    });
+
+// Export only what we need
+export { db, auth };
+
+// DO NOT export firebase - it's a global
