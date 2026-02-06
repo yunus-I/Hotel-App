@@ -1,0 +1,59 @@
+{
+  "rules": {
+    "hotels": {
+      "$hotelId": {
+        ".read": "auth != null && query.orderByChild == 'status' && query.equalTo == 'active'",
+        ".write": "auth != null && root.child('hotel_admins').child(auth.uid).val() == $hotelId",
+        
+        "basic_info": {
+          ".read": true,
+          ".write": false
+        },
+        
+        "menu_items": {
+          "$itemId": {
+            ".read": true,
+            ".write": "root.child('hotel_admins').child(auth.uid).val() == $hotelId",
+            ".validate": "newData.hasChildren(['name', 'price']) && newData.child('price').isNumber()"
+          }
+        },
+        
+        "rooms": {
+          ".read": true,
+          ".write": "root.child('hotel_admins').child(auth.uid).val() == $hotelId"
+        },
+        
+        "orders": {
+          "$orderId": {
+            ".read": "auth != null",
+            ".write": "auth != null",
+            ".validate": "newData.hasChildren(['items', 'total', 'status'])"
+          }
+        },
+        
+        "active_sessions": {
+          "$sessionId": {
+            ".read": "auth.uid == $sessionId",
+            ".write": "auth.uid == $sessionId"
+          }
+        }
+      }
+    },
+    
+    "hotel_admins": {
+      "$adminId": {
+        ".read": "auth.uid == $adminId",
+        ".write": false
+      }
+    },
+    
+    "analytics": {
+      "$hotelId": {
+        "daily_orders": {
+          ".read": "root.child('hotel_admins').child(auth.uid).val() == $hotelId",
+          ".write": "root.child('hotel_admins').child(auth.uid).val() == $hotelId"
+        }
+      }
+    }
+  }
+}

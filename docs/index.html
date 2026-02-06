@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HotelConnect - Guest Portal</title>
+    
+    <!-- Telegram Web App Meta Tags -->
+    <meta name="telegram:bot" content="@GrandHotel_001_bot">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader"></div>
+        <p class="loading-text">Loading Hotel Portal...</p>
+    </div>
+
+    <!-- App Container -->
+    <div id="app-container" class="hidden">
+        <!-- Header -->
+        <header id="app-header" class="app-header"></header>
+        
+        <!-- Main Content -->
+        <main id="app-content" class="app-content"></main>
+        
+        <!-- Navigation -->
+        <nav id="app-navigation" class="app-navigation"></nav>
+        
+        <!-- Cart Modal -->
+        <div id="cart-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Your Cart</h3>
+                    <button onclick="toggleCart()" class="close-btn">×</button>
+                </div>
+                <div id="cart-items" class="cart-items"></div>
+                <div class="cart-footer">
+                    <div class="cart-total">
+                        <span>Total:</span>
+                        <span id="cart-total">$0.00</span>
+                    </div>
+                    <button onclick="checkout()" class="checkout-btn">Checkout</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toast Container -->
+        <div id="toast-container" class="toast-container"></div>
+    </div>
+
+    <!-- Load JavaScript -->
+    <script src="js/app.js" type="module"></script>
+</body>
+</html>

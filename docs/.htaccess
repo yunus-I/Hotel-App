@@ -1,0 +1,9 @@
+# Enable CORS for Firebase
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE"
+Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+
+# Cache static assets
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg)$">
+    Header set Cache-Control "max-age=31536000, public"
+</FilesMatch>
